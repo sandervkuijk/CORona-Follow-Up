@@ -28,10 +28,8 @@ library(openxlsx)
 library(haven)
 
 ## Read acute-phase data
-##Gebruik dit bestand:
-#MaastrICCht_acute data_16_3_23.sav
 setwd("L:/SCEN/PZ-KEMTA/PROJECTEN/CORFU/Data/WERK DATA cohorten/MaastrICCht/ACUUT")
-acute <- read.spss("MaastrICCht_acute data_7_3_23.sav", to.data.frame = TRUE,
+acute <- read.spss("MaastrICCht_acute data_16_3_23.sav", to.data.frame = TRUE,
                    use.value.labels = TRUE, use.missings = FALSE)
 names(acute)[2] <- "Participant.Id"
 
@@ -91,6 +89,107 @@ rm(TEMP, acute, fub, fuv, fu3, fu6, fu12, fu18, fu24)
 
 ## Remove empty columns
 all.data <- all.data[, colSums(is.na(all.data)) < nrow(all.data)]
+
+## Remove redundant columns
+all.data$Participant.Creation.Date.y <- NULL
+all.data$Site.Abbreviation <- NULL
+all.data$Site.Abbreviation.x <- NULL
+all.data$Site.Abbreviation.y <- NULL
+
+## Column names to CORFU column names
+names(all.data)[1] <- "Cohort_ID"
+names(all.data)[names(all.data) == "admission_ckmb"] <- "bio_ckmb"
+names(all.data)[names(all.data) == "admission_bnp"] <- "bio_bnp"
+names(all.data)[names(all.data) == "treat_reno"] <- "treat_renal"
+names(all.data)[names(all.data) == "Participant.Creation.Date.x"] <- "admission_date" # Check with Marieke
+
+names(all.data)[names(all.data) == "C1VACWHC_general#Janssen"] <- "C1VACWHC_1"
+names(all.data)[names(all.data) == "C1VACWHC_general#Moderna"] <- "C1VACWHC_2"
+names(all.data)[names(all.data) == "C1VACWHC_general#AstraZeneca"] <- "C1VACWHC_3"
+names(all.data)[names(all.data) == "C1VACWHC_general#PfizerBioNTech"] <- "C1VACWHC_4"
+names(all.data)[names(all.data) == "C1VACWHC_general#unknow"] <- "C1VACWHC_5"
+
+names(all.data)[names(all.data) == "C1EQ5D_MO3"] <- "C1EQ5DPMO_3mdn"
+names(all.data)[names(all.data) == "C1EQ5D_SC3"] <- "C1EQ5DPSC_3mdn"
+names(all.data)[names(all.data) == "C1EQ5D_UA3"] <- "C1EQ5DPUA_3mdn"
+
+names(all.data)[names(all.data) == "C1EQ5D_MO6"] <- "C1EQ5DPMO_6mdn"
+names(all.data)[names(all.data) == "C1EQ5D_SC6"] <- "C1EQ5DPSC_6mdn"
+names(all.data)[names(all.data) == "C1EQ5D_UA6"] <- "C1EQ5DPUA_6mdn"
+
+names(all.data)[names(all.data) == "C1EQ5D_MO12"] <- "C1EQ5DPMO_12mdn"
+names(all.data)[names(all.data) == "C1EQ5D_SC12"] <- "C1EQ5DPSC_12mdn"
+names(all.data)[names(all.data) == "C1EQ5D_UA12"] <- "C1EQ5DPUA_21mdn"
+
+names(all.data)[names(all.data) == "C1EQ5D_MO18"] <- "C1EQ5DPMO_18mdn"
+names(all.data)[names(all.data) == "C1EQ5D_SC18"] <- "C1EQ5DPSC_18mdn"
+names(all.data)[names(all.data) == "C1EQ5D_UA18"] <- "C1EQ5DPUA_18mdn"
+
+names(all.data)[names(all.data) == "C1EQ5D_MO24"] <- "C1EQ5DPMO_24mdn"
+names(all.data)[names(all.data) == "C1EQ5D_SC24"] <- "C1EQ5DPSC_24mdn"
+names(all.data)[names(all.data) == "C1EQ5D_UA24"] <- "C1EQ5DPUA_24mdn"
+
+all.data$C1EQ5DPPD_3mdn <- ifelse(all.data$'C1EQ5D_PD3#No_issue' == 1, 1,
+                           ifelse(all.data$'C1EQ5D_PD3#Some_issue' == 1, 2,
+                           ifelse(all.data$'C1EQ5D_PD3#Mild_issue' == 1, 3,
+                           ifelse(all.data$'C1EQ5D_PD3#Severe_issue' == 1, 4,
+                           ifelse(all.data$'C1EQ5D_PD3#Very_severe_issue' == 1, 5, NA)))))
+
+all.data$C1EQ5DPPD_6mdn <- ifelse(all.data$'C1EQ5D_PD6#No_issue' == 1, 1,
+                           ifelse(all.data$'C1EQ5D_PD6#Some_issue' == 1, 2,
+                           ifelse(all.data$'C1EQ5D_PD6#Mild_issue' == 1, 3,
+                           ifelse(all.data$'C1EQ5D_PD6#Severe_issue' == 1, 4,
+                           ifelse(all.data$'C1EQ5D_PD6#Very_severe_issue' == 1, 5, NA)))))
+
+all.data$C1EQ5DPPD_12mdn <- ifelse(all.data$'C1EQ5D_PD12#No_issue' == 1, 1,
+                            ifelse(all.data$'C1EQ5D_PD12#Some_issue' == 1, 2,
+                            ifelse(all.data$'C1EQ5D_PD12#Mild_issue' == 1, 3,
+                            ifelse(all.data$'C1EQ5D_PD12#Severe_issue' == 1, 4,
+                            ifelse(all.data$'C1EQ5D_PD12#Very_severe_issue' == 1, 5, NA)))))
+
+all.data$C1EQ5DPPD_18mdn <- ifelse(all.data$'C1EQ5D_PD18#No_issue' == 1, 1,
+                            ifelse(all.data$'C1EQ5D_PD18#Some_issue' == 1, 2,
+                            ifelse(all.data$'C1EQ5D_PD18#Mild_issue' == 1, 3,
+                            ifelse(all.data$'C1EQ5D_PD18#Severe_issue' == 1, 4,
+                            ifelse(all.data$'C1EQ5D_PD18#Very_severe_issue' == 1, 5, NA)))))
+
+all.data$C1EQ5DPPD_24mdn <- ifelse(all.data$'C1EQ5D_PD24#No_issue' == 1, 1,
+                            ifelse(all.data$'C1EQ5D_PD24#Some_issue' == 1, 2,
+                            ifelse(all.data$'C1EQ5D_PD24#Mild_issue' == 1, 3,
+                            ifelse(all.data$'C1EQ5D_PD24#Severe_issue' == 1, 4,
+                            ifelse(all.data$'C1EQ5D_PD24#Very_severe_issue' == 1, 5, NA)))))
+
+all.data$C1EQ5DPAD_3mdn <- ifelse(all.data$'C1EQ5D_AD3#No_issue' == 1, 1,
+                           ifelse(all.data$'C1EQ5D_AD3#Some_issue' == 1, 2,
+                           ifelse(all.data$'C1EQ5D_AD3#Mild_issue' == 1, 3,
+                           ifelse(all.data$'C1EQ5D_AD3#Severe_issue' == 1, 4,
+                           ifelse(all.data$'C1EQ5D_AD3#Very_severe_issue' == 1, 5, NA)))))
+
+all.data$C1EQ5DPAD_6mdn <- ifelse(all.data$'C1EQ5D_AD6#No_issue' == 1, 1,
+                           ifelse(all.data$'C1EQ5D_AD6#Some_issue' == 1, 2,
+                           ifelse(all.data$'C1EQ5D_AD6#Mild_issue' == 1, 3,
+                           ifelse(all.data$'C1EQ5D_AD6#Severe_issue' == 1, 4,
+                           ifelse(all.data$'C1EQ5D_AD6#Very_severe_issue' == 1, 5, NA)))))
+
+all.data$C1EQ5DPAD_12mdn <- ifelse(all.data$'C1EQ5D_AD12#No_issue' == 1, 1,
+                            ifelse(all.data$'C1EQ5D_AD12#Some_issue' == 1, 2,
+                            ifelse(all.data$'C1EQ5D_AD12#Mild_issue' == 1, 3,
+                            ifelse(all.data$'C1EQ5D_AD12#Severe_issue' == 1, 4,
+                            ifelse(all.data$'C1EQ5D_AD12#Very_severe_issue' == 1, 5, NA)))))
+
+all.data$C1EQ5DPAD_18mdn <- ifelse(all.data$'C1EQ5D_AD18#No_issue' == 1, 1,
+                            ifelse(all.data$'C1EQ5D_AD18#Some_issue' == 1, 2,
+                            ifelse(all.data$'C1EQ5D_AD18#Mild_issue' == 1, 3,
+                            ifelse(all.data$'C1EQ5D_AD18#Severe_issue' == 1, 4,
+                            ifelse(all.data$'C1EQ5D_AD18#Very_severe_issue' == 1, 5, NA)))))
+
+all.data$C1EQ5DPAD_24mdn <- ifelse(all.data$'C1EQ5D_AD24#No_issue' == 1, 1,
+                            ifelse(all.data$'C1EQ5D_AD24#Some_issue' == 1, 2,
+                            ifelse(all.data$'C1EQ5D_AD24#Mild_issue' == 1, 3,
+                            ifelse(all.data$'C1EQ5D_AD24#Severe_issue' == 1, 4,
+                            ifelse(all.data$'C1EQ5D_AD24#Very_severe_issue' == 1, 5, NA)))))
+
+names(all.data) <- gsub("HEADACHE", "HEA", names(all.data), fixed = TRUE)
 
 ## Export as SPSS .sav dataset
 setwd("L:/SCEN/PZ-KEMTA/PROJECTEN/CORFU/Data/WERK DATA cohorten/MaastrICCht/TOTAAL")
