@@ -1,1 +1,9 @@
 .Rhistory
+
+*.csv
+*.xlsx
+*.sav
+*.sps
+*.spv
+*.doc
+*.docx
