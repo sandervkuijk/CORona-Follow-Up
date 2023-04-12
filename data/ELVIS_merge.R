@@ -37,11 +37,21 @@ full <- subset(full, full$Cohort_ID != "")
 full$proven_infection_date <- as.Date(full$proven_infection_date,
                                       origin = "1899-12-30")
 
+# Maike: I remove cor196 since the age is clearly incorrect and there is no hospital admission data registered
+# Then for patient CZ1420 there is also no hospital admission date and no clear alternative. Besides a clearly wrong BMI, the rest of the data is well registered. So I keep this patient in the dataset
+# For patients CZ1020, CZ1342, CZ0549, CZ0921, CZ0135 also no hospital data is available, but the date of admission at the ward is available and can be used as an alternative
+
+ind <- with(full, full$Cohort_ID == 'cor196')
+full <- full[!ind,]
+
 # Select acute data and questionnaire data
 first <- full[, c(1:310)]
 first <- subset(first, first$code != "")
+first$admissiondate <- ifelse(is.na(first$admission_hospital_date), as.Date(first$admission_ward_date), as.Date(first$admission_hospital_date)) #Added as an alternative date in case there was no hospital admission date
+first$admissiondate <- as.Date(first$admissiondate,
+                                      origin = "1970-01-01")
 first$months <- as.numeric(round(difftime(first$INGEVULD,
-                                 first$admission_hospital_date, units = "weeks")/(52/12)))
+                                 first$admissiondate, units = "weeks")/(52/12)))
 first$moment <- ifelse(first$months < 9, 6,
                        ifelse(first$months < 15, 12,
                               ifelse(first$months < 21, 18, 24)))
@@ -54,7 +64,7 @@ second$months <- as.numeric(round(difftime(second$INGEVULD_12mdn,
 second$moment <- ifelse(second$months < 9, 6,
                        ifelse(second$months < 15, 12,
                               ifelse(second$months < 21, 18, 24)))
-second$moment[is.na(second$moment)] <- 12 # Assumption!
+second$moment[is.na(second$moment)] <- 12 # Assumption! #Dit is CZ1420 waarvan geen hospital admission date en ook geen ward admission date beschikbaar is
 
 # Third round of questionnaires
 third <- full[, c(1:95, 491:687)]
@@ -64,7 +74,7 @@ third$months <- as.numeric(round(difftime(third$INGEVULD_24mdn,
 third$moment <- ifelse(third$months < 9, 6,
                         ifelse(third$months < 15, 12,
                                ifelse(third$months < 21, 18, 24)))
-third$moment[is.na(third$moment)] <- 24 # Assumption
+third$moment[is.na(third$moment)] <- 24 # Assumption #Dit is CZ1420 waarvan geen hospital admission date en ook geen ward admission date beschikbaar is
 rm(full)
 
 ## Merge to long format dataframe before going wide
@@ -103,7 +113,6 @@ all.data.wide <- reshape(all.data.long, idvar = "Cohort_ID",
 
 setwd("L:/SCEN/PZ-KEMTA/PROJECTEN/CORFU/Data/data_r_sander")
 save(all.data.long, file = "elvis_long.rds")
-
 # rm(all.data.long) # May be useful for longitudinal analyses
 
 names(all.data.wide) <- gsub(x = names(all.data.wide), pattern = ".6",
