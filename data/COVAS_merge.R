@@ -46,6 +46,7 @@ all.data <- left_join(acute, corfu, by = "cohort_ID")
 ## Export as SPSS .sav dataset
 setwd("L:/SCEN/PZ-KEMTA/PROJECTEN/CORFU/Data/WERK DATA cohorten/BERNHOVEN")
 write_sav(all.data, "COVAS_CORFU_data.sav")
+write.csv(all.data, "COVAS_CORFU_data.csv")
 rm(all.data)
 
 ## End of file.
