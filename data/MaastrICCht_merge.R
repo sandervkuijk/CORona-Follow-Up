@@ -27,13 +27,17 @@ library(foreign)
 library(openxlsx)
 library(haven)
 
-## Function to convert SPSS date to R date
-spss2date <- function(x) as.Date(x/86400, origin = "1582-10-14")
+# ## Function to convert SPSS date to R date
+# spss2date <- function(x) as.Date(x/86400, origin = "1582-10-14")
 
 ## Read acute-phase data
-setwd("L:/SCEN/PZ-KEMTA/PROJECTEN/CORFU/Data/WERK DATA cohorten/MaastrICCht/ACUUT")
-acute <- read.spss("MaastrICCht_acute data_16_3_23.sav", to.data.frame = TRUE,
-                   use.value.labels = TRUE, use.missings = FALSE)
+# setwd("L:/SCEN/PZ-KEMTA/PROJECTEN/CORFU/Data/WERK DATA cohorten/MaastrICCht/ACUUT")
+# acute <- read.spss("MaastrICCht_acute data_16_3_23.sav", to.data.frame = TRUE,
+#                    use.value.labels = TRUE, use.missings = FALSE)
+
+# Problemen met spss-compatibiliteit tussen bronnen
+setwd("L:/SCEN/PZ-KEMTA/PROJECTEN/CORFU/Data/ORGINELE DATA van cohorten/MaastrICCht/ACUUT")
+acute <- read.csv("CORFU_MUMC.csv", header = TRUE)
 names(acute)[2] <- "Participant.Id"
 
 ## Read CORFU follow-up data
@@ -832,8 +836,10 @@ names(all.data)[names(all.data) == "C1EQX_CON24"] <- "C1EQX_CON_24mdn"
 ## Date variables
 all.data$admission_date <- as.Date(substr(all.data$admission_date, 1, 10),
                                    format = "%d-%m-%Y")
-all.data$admission_icu_date <- spss2date(all.data$admission_icu_date)
-all.data$discharge_icu_date <- spss2date(all.data$discharge_icu_date)
+all.data$admission_icu_date <- as.Date(all.data$admission_icu_date,
+                                       format = "%d.%m.%Y")
+all.data$discharge_icu_date <- as.Date(all.data$discharge_icu_date,
+                                       format = "%d.%m.%Y")
 
 ## Export as SPSS .sav dataset
 # Delete (near-)empty rows
@@ -845,7 +851,8 @@ omit <- ifelse(is.na(all.data$INGEVULD_3MONTHS) &
 all.data <- subset(all.data, omit == 0)
 
 setwd("L:/SCEN/PZ-KEMTA/PROJECTEN/CORFU/Data/WERK DATA cohorten/MaastrICCht/TOTAAL")
+write.csv(all.data, "Maastricht_CORFU_data.csv")
 write_sav(all.data, "MaastrICCht_CORFU_data.sav")
-rm(all.data, omit, spss2date)
+rm(all.data, omit)
 
 ## End of file.

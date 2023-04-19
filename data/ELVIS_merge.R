@@ -22,20 +22,26 @@
 # [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 rm(list = ls())
+
 library(openxlsx)
 library(haven)
 library(sjmisc)
 library(plyr)
 library(data.table)
 
-# Complete data
-setwd("L:/SCEN/PZ-KEMTA/PROJECTEN/CORFU/Data/WERK DATA cohorten/ELVIS")
+## Complete data
+setwd("L:/SCEN/PZ-KEMTA/PROJECTEN/CORFU/Data/WERK DATA cohorten/ELVIS/Oude data")
 full <-  read_spss("ELVIS_acute en vragenlijst data extractie van 09.03.2023 MI.sav",
                    user_na = TRUE)
 full <- full[, colSums(is.na(full)) < nrow(full)]
 full <- subset(full, full$Cohort_ID != "")
+
+## Date variables
 full$proven_infection_date <- as.Date(full$proven_infection_date,
                                       origin = "1899-12-30")
+full$discharge_hospital_date[full$discharge_hospital_date < "2020-01-01"] <- NA
+full$admission_icu_date[full$admission_icu_date < "2020-01-01"] <- NA
+full$discharge_icu_date[full$discharge_icu_date < "2020-01-01"] <- NA
 
 # Maike: I remove cor196 since the age is clearly incorrect and there is no hospital admission data registered
 # Then for patient CZ1420 there is also no hospital admission date and no clear alternative. Besides a clearly wrong BMI, the rest of the data is well registered. So I keep this patient in the dataset
@@ -43,6 +49,7 @@ full$proven_infection_date <- as.Date(full$proven_infection_date,
 
 ind <- with(full, full$Cohort_ID == 'cor196')
 full <- full[!ind,]
+rm(ind)
 
 # Select acute data and questionnaire data
 first <- full[, c(1:310)]
@@ -113,8 +120,9 @@ all.data.wide <- reshape(all.data.long, idvar = "Cohort_ID",
 
 setwd("L:/SCEN/PZ-KEMTA/PROJECTEN/CORFU/Data/data_r_sander")
 save(all.data.long, file = "elvis_long.rds")
-# rm(all.data.long) # May be useful for longitudinal analyses
+rm(all.data.long) # May be useful for longitudinal analyses
 
+names(all.data.wide)[1:2] <- c("cohort", "cohort_ID")
 names(all.data.wide) <- gsub(x = names(all.data.wide), pattern = ".6",
                              replacement = "_6mdn", fixed = TRUE) 
 names(all.data.wide) <- gsub(x = names(all.data.wide), pattern = ".12",
@@ -146,7 +154,16 @@ all.data$C1OTHER_X_12mdn  <- substr(all.data$C1OTHER_X_12mdn, 1, 8)
 all.data$C1OTHER_X_18mdn  <- substr(all.data$C1OTHER_X_18mdn, 1, 8)
 all.data$C1OTHER_X_24mdn  <- substr(all.data$C1OTHER_X_24mdn, 1, 8)
 
-setwd("L:/SCEN/PZ-KEMTA/PROJECTEN/CORFU/Data/WERK DATA cohorten/ELVIS/TOTAAL")
+## Other variables
+names(all.data)[names(all.data) == "admission_diagnosis_string"] <- "admission_diagnosis"
+all.data$comorb_arrhytmia <- factor(all.data$comorb_arrhytmia, levels = c(0, 1),
+                                    labels = c("no", "yes"))
+
+## Export as SPSS .sav dataset
+setwd("L:/SCEN/PZ-KEMTA/PROJECTEN/CORFU/Data/WERK DATA cohorten/ELVIS/Oude data/TOTAAL")
 write_sav(all.data, "ELVIS_CORFU_FINAL.sav")
+write.csv(all.data, "ELVIS_CORFU_FINAL.csv")
+
+rm(all.data, all.data.wide)
 
 ### End of file.
