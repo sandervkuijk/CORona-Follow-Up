@@ -27,6 +27,9 @@ library(foreign)
 library(openxlsx)
 library(haven)
 
+## Function to convert SPSS date to R date
+spss2date <- function(x) as.Date(x/86400, origin = "1582-10-14")
+
 ## Read acute-phase data
 setwd("L:/SCEN/PZ-KEMTA/PROJECTEN/CORFU/Data/WERK DATA cohorten/MaastrICCht/ACUUT")
 acute <- read.spss("MaastrICCht_acute data_16_3_23.sav", to.data.frame = TRUE,
@@ -97,7 +100,7 @@ all.data$Site.Abbreviation.x <- NULL
 all.data$Site.Abbreviation.y <- NULL
 
 ## Column names to CORFU column names
-names(all.data)[1] <- "Cohort_ID"
+names(all.data)[1] <- "cohort_ID"
 names(all.data)[names(all.data) == "admission_ckmb"] <- "bio_ckmb"
 names(all.data)[names(all.data) == "admission_bnp"] <- "bio_bnp"
 names(all.data)[names(all.data) == "treat_reno"] <- "treat_renal"
@@ -399,13 +402,6 @@ all.data$C1MORLIST_17_18mdn <- ifelse(all.data$INCLUSIE_18MONTHS == 1, all.data$
 all.data$C1MORLIST_17_24mdn <- ifelse(all.data$INCLUSIE_24MONTHS == 1, all.data$C1MORLIST_17, NA)
 all.data$C1MORLIST_17 <- NULL
 
-# all.data$C1MORLIST_18_3mdn <- ifelse(all.data$INCLUSIE_3MONTHS == 1, all.data$C1MORLIST_18, NA)
-# all.data$C1MORLIST_18_6mdn <- ifelse(all.data$INCLUSIE_6MONTHS == 1, all.data$C1MORLIST_18, NA)
-# all.data$C1MORLIST_18_12mdn <- ifelse(all.data$INCLUSIE_12MONTHS == 1, all.data$C1MORLIST_18, NA)
-# all.data$C1MORLIST_18_18mdn <- ifelse(all.data$INCLUSIE_18MONTHS == 1, all.data$C1MORLIST_18, NA)
-# all.data$C1MORLIST_18_24mdn <- ifelse(all.data$INCLUSIE_24MONTHS == 1, all.data$C1MORLIST_18, NA)
-# all.data$C1MORLIST_18 <- NULL
-
 all.data$C1MORLIST_19_3mdn <- ifelse(all.data$INCLUSIE_3MONTHS == 1, all.data$C1MORLIST_19, NA)
 all.data$C1MORLIST_19_6mdn <- ifelse(all.data$INCLUSIE_6MONTHS == 1, all.data$C1MORLIST_19, NA)
 all.data$C1MORLIST_19_12mdn <- ifelse(all.data$INCLUSIE_12MONTHS == 1, all.data$C1MORLIST_19, NA)
@@ -503,13 +499,6 @@ all.data$C1VACWHC_4_12mdn <- ifelse(all.data$INCLUSIE_12MONTHS == 1, all.data$C1
 all.data$C1VACWHC_4_18mdn <- ifelse(all.data$INCLUSIE_18MONTHS == 1, all.data$C1VACWHC_4, NA)
 all.data$C1VACWHC_4_24mdn <- ifelse(all.data$INCLUSIE_24MONTHS == 1, all.data$C1VACWHC_4, NA)
 all.data$C1VACWHC_4 <- NULL
-
-# all.data$C1VACWHC_5_3mdn <- ifelse(all.data$INCLUSIE_3MONTHS == 1, all.data$C1VACWHC_5, NA)
-# all.data$C1VACWHC_5_6mdn <- ifelse(all.data$INCLUSIE_6MONTHS == 1, all.data$C1VACWHC_5, NA)
-# all.data$C1VACWHC_5_12mdn <- ifelse(all.data$INCLUSIE_12MONTHS == 1, all.data$C1VACWHC_5, NA)
-# all.data$C1VACWHC_5_18mdn <- ifelse(all.data$INCLUSIE_18MONTHS == 1, all.data$C1VACWHC_5, NA)
-# all.data$C1VACWHC_5_24mdn <- ifelse(all.data$INCLUSIE_24MONTHS == 1, all.data$C1VACWHC_5, NA)
-# all.data$C1VACWHC_5 <- NULL
 
 names(all.data) <- gsub("HEADACHE", "HEA", names(all.data), fixed = TRUE)
 
@@ -840,9 +829,23 @@ names(all.data)[names(all.data) == "C1EQX_CON12"] <- "C1EQX_CON_12mdn"
 names(all.data)[names(all.data) == "C1EQX_CON18"] <- "C1EQX_CON_18mdn"
 names(all.data)[names(all.data) == "C1EQX_CON24"] <- "C1EQX_CON_24mdn"
 
+## Date variables
+all.data$admission_date <- as.Date(substr(all.data$admission_date, 1, 10),
+                                   format = "%d-%m-%Y")
+all.data$admission_icu_date <- spss2date(all.data$admission_icu_date)
+all.data$discharge_icu_date <- spss2date(all.data$discharge_icu_date)
+
 ## Export as SPSS .sav dataset
+# Delete (near-)empty rows
+omit <- ifelse(is.na(all.data$INGEVULD_3MONTHS) &
+               is.na(all.data$INGEVULD_6MONTHS) &
+               is.na(all.data$INGEVULD_12MONTHS) &
+               is.na(all.data$INGEVULD_18MONTHS) &
+               is.na(all.data$INGEVULD_24MONTHS), 1, 0)
+all.data <- subset(all.data, omit == 0)
+
 setwd("L:/SCEN/PZ-KEMTA/PROJECTEN/CORFU/Data/WERK DATA cohorten/MaastrICCht/TOTAAL")
 write_sav(all.data, "MaastrICCht_CORFU_data.sav")
-rm(all.data)
+rm(all.data, omit, spss2date)
 
 ## End of file.
