@@ -36,7 +36,7 @@ corfu <- read_spss("220727_CORFU_24mdn_BERNHOVEN_22_2_23.sav",
 ## Make sure column name and presentation of ID number is equal
 acute$cohort_ID <- tolower(acute$cohort_ID)
 names(corfu)[1] <- names(acute)[2]
-attr(corfu$cohort_ID, which = "label") <- "Cohort ID"
+attr(corfu$cohort_ID, which = "label") <- "cohort ID"
 attr(corfu$cohort_ID, which = "format.spss") <- "A8"
 attr(corfu$cohort_ID, which = "display_width") <- NULL
 
@@ -44,7 +44,8 @@ attr(corfu$cohort_ID, which = "display_width") <- NULL
 all.data <- left_join(acute, corfu, by = "cohort_ID")
 
 ## Export as SPSS .sav dataset
-setwd("L:/SCEN/PZ-KEMTA/PROJECTEN/CORFU/Data/WERK DATA cohorten/BERNHOVEN")
+all.data <- Filter(function(x)!all(is.na(x)), all.data)
+setwd("L:/SCEN/PZ-KEMTA/PROJECTEN/CORFU/Data/WERK DATA cohorten/BERNHOVEN/TOTAAL")
 write_sav(all.data, "COVAS_CORFU_data.sav")
 write.csv(all.data, "COVAS_CORFU_data.csv")
 rm(all.data)
