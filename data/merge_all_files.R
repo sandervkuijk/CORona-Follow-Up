@@ -17,6 +17,9 @@
 
 rm(list = ls())
 
+##
+library(haven)
+
 ## Read in all separate cohort files
 
 setwd("L:/SCEN/PZ-KEMTA/PROJECTEN/CORFU/Data/WERK DATA cohorten/BERNHOVEN/TOTAAL")
@@ -31,12 +34,18 @@ setwd("L:/SCEN/PZ-KEMTA/PROJECTEN/CORFU/Data/WERK DATA cohorten/MaastrICCht/TOTA
 maast <- read.csv("Maastricht_CORFU_data.csv", header = TRUE)
 maast$cohort <- rep("maastriccht", nrow(maast))
 
-## Complete file, all cohorts long
-setwd("L:/SCEN/PZ-KEMTA/PROJECTEN/CORFU/Data")
-
-capture.output(names(covas), file = "covas.txt")
-capture.output(names(elvis), file = "elvis.txt")
-capture.output(names(maast), file = "maast.txt")
-
+## Merge with creation of empty columns for non-existing cohort variables
 all.data <- rbind.fill(covas, elvis, maast)
+rm(covas, elvis, maast)
 
+## Remove columns that are empty (move to cohort merge files later?)
+all.data <- all.data[, colSums(is.na(all.data)) < nrow(all.data)]
+
+## Complete file, all cohorts long
+setwd("L:/SCEN/PZ-KEMTA/PROJECTEN/CORFU/Data/TOTAAL")
+
+write_sav(all.data, "CORFU_data_complete.sav")
+write.csv(all.data, "CORFU_data_complete.csv")
+rm(all.data)
+
+## End of file.
